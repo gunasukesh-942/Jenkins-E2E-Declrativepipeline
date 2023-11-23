@@ -1,0 +1,62 @@
+pipeline {
+    agent any
+    tools {
+        maven "maven"
+    }
+    stages {
+        stage("preparation") {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('Code') {
+            steps {
+                git branch: 'master', url: 'https://github.com/gunasukesh-942/one.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh " mvn clean package"
+            }
+        }
+        stage('Sonar') {
+            steps {
+                script {
+                    
+                    withSonarQubeEnv("sonar") {
+                        sh "mvn sonar:sonar"
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh "cp /var/lib/jenkins/workspace/job-2/target/*.war /opt/apache-tomcat-9.0.83/webapps/"
+            }
+        }
+        stage('nexus') {
+            steps {
+                script {
+                    nexusArtifactUploader artifacts: [[artifactId: 'myweb', classifier: '', file: 'target/myweb-8.4.6.war', type: 'war']], credentialsId: '9bc40a95-3f89-4928-978b-7ca08484bf15', groupId: 'in.javahome', nexusUrl: '13.235.71.18:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'nexusrepo', version: '8.4.6'
+                }
+            }
+        }
+        stage('s3artifacts') {
+            steps {
+                script {
+                    withCredentials([
+                        [ $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'deploytos3', 
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY' ]
+                    ]) {
+                        sh"aws s3 ls "
+                        sh "aws s3 cp /var/lib/jenkins/workspace/job-2/target/*.war s3://sukesh-artifacts-bucket"
+                    }   
+                }
+            }
+        }
+       
+        
+    }
+}
