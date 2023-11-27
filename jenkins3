@@ -1,0 +1,79 @@
+pipeline {
+    agent any
+    triggers{
+        pollSCM "* * * * *"
+    }
+    stages {
+        stage('cleaning workspace') {
+            steps {
+               cleanWs()
+            }
+        }
+        stage('code') {
+            steps {
+               git branch:'master', url:'https://github.com/gunasukesh-942/one.git'
+            }
+        }
+        stage('build and test') {
+            steps {
+               sh "/opt/apache-maven-3.8.8/bin/mvn clean package"
+            }
+        }
+        stage('sonar') {
+            steps {
+               script {
+                   withSonarQubeEnv("sonar") {
+                       sh"/opt/apache-maven-3.8.8/bin/mvn sonar:sonar"
+                   }
+               }
+            }
+        }
+        stage('nexus') {
+            steps {
+               script {
+                   nexusArtifactUploader artifacts: [[artifactId: 'myweb', classifier: '', file: 'target/myweb-8.4.6.war', type: 'war']], credentialsId: 'f145a628-22e0-4fcc-ad15-b34c11c9e36f', groupId: 'in.javahome', nexusUrl: '3.110.56.131:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'swiggy-repo', version: '8.4.6'
+               }
+            }
+        }
+        stage('s3artifacts') {
+            steps {
+                script {
+                    withCredentials([
+                        [ $class: 'AmazonWebServicesCredentialsBinding',
+                        credentialsId: 'deploytos3', 
+                        accessKeyVariable: 'AWS_ACCESS_KEY_ID', 
+                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY' ]
+                    ]) {
+                        sh"aws s3 ls "
+                        
+                        sh "aws s3 cp /var/lib/jenkins/workspace/job-1/target/*.war s3://sukesh-artifacts-bucket"
+                    }   
+                }
+               
+            }
+        }
+        stage('Deploy') {
+            input {
+                message "deploy cheyymantara sir"
+                ok " thagalabettandi sir"
+            }
+            steps {
+               sh "cp /var/lib/jenkins/workspace/job-1/target/*.war /opt/apache-tomcat-9.0.83/webapps/"
+            }
+        }
+        
+    }
+    post{
+        success{
+            mail bcc: '', body:"""Please find the jenkins url : $JENKINS_URL 
+project name is $JOB_NAME and Build id is $BUILD_ID
+KCPD Performance!!""", cc: '', from: '', replyTo: '', subject: """$JOB_NAME is $currentBuild.result""", to: 'sukeshguna942@gmail.com'
+        }
+        failure{
+            mail bcc: '', body:"""Please find the jenkins url : $JENKINS_URL
+find the project name $JOB_NAME and Build id is $BUILD_ID
+Govindha govindha ..:)""", cc: '', from: '', replyTo: '', subject: """$JOB_NAME is $currentBuild.result""", to: 'sukeshguna942@gmail.com'
+        }
+    }
+}
+
