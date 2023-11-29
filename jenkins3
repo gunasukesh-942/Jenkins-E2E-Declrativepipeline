@@ -77,3 +77,47 @@ Govindha govindha ..:)""", cc: '', from: '', replyTo: '', subject: """$JOB_NAME 
     }
 }
 
+..................................................................................................................................
+Tools installed in servere not global tool configuration 
+
+
+//maven normal ga install chestey 3.1.0 version vastundhi aa version manaki sonarqube ki support cheyyatledhu kabatti maven 3.8.8 ni 
+//wget https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz ee link use chesi download chesi
+// untar chesi
+//after vachhina file /opt lo pettali
+// .basharc aney file loki velli last lo two lines add cheyyali 
+// export PATH=/opt/apache-maven-3.8.8/bin:$PATH
+// export M2_HOME=/opt/apache-maven-3.8.8
+// after that we need to do run source ~/.bashrc   # for Bash
+source ~/.zshrc    # for Zsh
+//then check mvn -v
+                    *----------------------------------*-------------------------------------------*
+sonar ki maven 3.8.6 above support chestundhi present manam server lo maven install chetsam kabatti global lo cheyyalisna avasarm ledhu....
+but global gtool lo configure chestey pipeline script verey vuntundhi.
+
+sonar ni manam jenkins tho integrate cheyyali 
+plugin: sonarqubescanner
+
+                   *......................................*..........................................*
+nexus ni manam integrate cheyyalsina avasarm leedhu ( freestyle ayithey dashboard lo integrate cheyyali but pipeline lo cheyyalsina avasarm ledhu)
+pipeline synatx use chesi manam script generate cheyyadaniki manaki nexus artifact uploader plugin kaavali.
+
+plugin :nexus artifact uploader 
+
+                    *.....................................*...........................................*
+s3 manam jenkins dashboard lo inetgrate cheyyalisina avasarm ledhu ( freestyle lo ithey cheyyali ) but pipeline lo not required
+s3 ni intgerate cheyyali antey kind lo manaki access key secret key kaavali adhi default ga vundhadhu aws credentials plugin install chesukovali
+
+plugin: aws credentials
+
+                    *......................................*..........................................*
+deploymnt same server kabati easy ga ipoyindhi adhey verey server lo tomcat etup chesi deployment cheyyali antey 
+ssh agent plugin use chesi pipeline syntax dwara manam oka credentials id genretate chesukovali danilo script rayali like 
+(sh "scp -o StrictHostKeyChecking=no source ec2-user @ip:destination ")
+
+plugin : ssh agent
+                    *..................................................................................*
+main pampinchandanti SMTP use chesa
+denni jenkins dashboar lo integrate cheyyali and pipeline synatx use chesi mail:Mail use chesi script generate cheyyali 
+Plugins : mailer plugin and email extension plugin2.0
+
